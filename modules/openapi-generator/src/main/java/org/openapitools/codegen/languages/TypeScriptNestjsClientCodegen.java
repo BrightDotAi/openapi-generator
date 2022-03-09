@@ -49,7 +49,7 @@ public class TypeScriptNestjsClientCodegen extends AbstractTypeScriptClientCodeg
     public static final String STRING_ENUMS = "stringEnums";
     public static final String STRING_ENUMS_DESC = "Generate string enums instead of objects for enum values.";
 
-    protected String nestVersion = "6.0.0";
+    protected String nestVersion = "8.3.1";
     protected String npmRepository = null;
     protected String serviceSuffix = "Service";
     protected String serviceFileSuffix = ".service";
@@ -109,7 +109,7 @@ public class TypeScriptNestjsClientCodegen extends AbstractTypeScriptClientCodeg
 
     @Override
     public String getHelp() {
-        return "Generates a TypeScript Nestjs 6.x client library.";
+        return "Generates a TypeScript Nestjs 8.x client library.";
     }
 
     @Override

@@ -1,5 +1,7 @@
-import { DynamicModule, HttpService, HttpModule, Module, Global } from '@nestjs/common';
+import { DynamicModule, Module, Global } from '@nestjs/common';
 import { Configuration } from './configuration';
+import { HttpService, HttpModule } from '@nestjs/axios';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 {{#apiInfo}}
 {{#apis}}
@@ -9,7 +11,7 @@ import { {{classname}} } from './{{importPath}}';
 
 @Global()
 @Module({
-  imports:      [ HttpModule ],
+  imports:      [ HttpModule, ConfigModule ],
   exports:      [
     {{#apiInfo}}{{#apis}}{{classname}}{{^-last}},
     {{/-last}}{{/apis}}{{/apiInfo}}
