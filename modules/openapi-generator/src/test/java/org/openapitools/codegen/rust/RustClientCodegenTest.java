@@ -31,16 +31,23 @@ public class RustClientCodegenTest {
 
         Assert.assertEquals(codegen.additionalProperties().get(CodegenConstants.HIDE_GENERATION_TIMESTAMP), Boolean.TRUE);
         Assert.assertEquals(codegen.isHideGenerationTimestamp(), true);
+
+        Assert.assertEquals(codegen.additionalProperties().get(RustClientCodegen.PREFER_UNSIGNED_INT), Boolean.FALSE);
+        Assert.assertEquals(codegen.getPreferUnsignedInt(), false);
     }
 
     @Test
     public void testSettersForConfigValues() throws Exception {
         final RustClientCodegen codegen = new RustClientCodegen();
         codegen.setHideGenerationTimestamp(false);
+        codegen.setPreferUnsignedInt(true);
         codegen.processOpts();
 
         Assert.assertEquals(codegen.additionalProperties().get(CodegenConstants.HIDE_GENERATION_TIMESTAMP), Boolean.FALSE);
         Assert.assertEquals(codegen.isHideGenerationTimestamp(), false);
+
+        Assert.assertEquals(codegen.additionalProperties().get(RustClientCodegen.PREFER_UNSIGNED_INT), Boolean.TRUE);
+        Assert.assertEquals(codegen.getPreferUnsignedInt(), true);
     }
 
     @Test
@@ -53,4 +60,10 @@ public class RustClientCodegenTest {
         Assert.assertEquals(codegen.isHideGenerationTimestamp(), false);
     }
 
+    @Test
+    public void testLowercaseParameterName() throws Exception {
+        final RustClientCodegen codegen = new RustClientCodegen();
+
+        Assert.assertEquals(codegen.toParamName("TESTING"), "testing");
+    }
 }

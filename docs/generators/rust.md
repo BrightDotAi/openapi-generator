@@ -16,17 +16,18 @@ title: Documentation for the rust Generator
 ## CONFIG OPTIONS
 These options may be applied as additional-properties (cli) or configOptions (plugins). Refer to [configuration docs](https://openapi-generator.tech/docs/configuration) for more details.
 
-| Option | Description | Values | Default |
-| ------ | ----------- | ------ | ------- |
-|enumNameSuffix|Suffix that will be appended to all enum names.| ||
-|hideGenerationTimestamp|Hides the generation timestamp when files are generated.| |true|
-|library|library template (sub-template) to use.|<dl><dt>**hyper**</dt><dd>HTTP client: Hyper.</dd><dt>**reqwest**</dt><dd>HTTP client: Reqwest.</dd></dl>|reqwest|
-|packageName|Rust package name (convention: lowercase).| |openapi|
-|packageVersion|Rust package version.| |1.0.0|
-|supportAsync|If set, generate async function call instead. This option is for 'reqwest' library only| |true|
-|supportMultipleResponses|If set, return type wraps an enum of all possible 2xx schemas. This option is for 'reqwest' library only| |false|
-|useSingleRequestParameter|Setting this property to true will generate functions with a single argument containing all API endpoint parameters instead of one argument per parameter.| |false|
-|withAWSV4Signature|whether to include AWS v4 signature support| |false|
+| Option | Description                                                                                                                                                | Values | Default |
+| ------ |------------------------------------------------------------------------------------------------------------------------------------------------------------| ------ | ----- |
+|enumNameSuffix| Suffix that will be appended to all enum names.| ||
+|hideGenerationTimestamp| Hides the generation timestamp when files are generated.| |true|
+|library| library template (sub-template) to use.|<dl><dt>**hyper**</dt><dd>HTTP client: Hyper.</dd><dt>**reqwest**</dt><dd>HTTP client: Reqwest.</dd></dl>|reqwest|
+|packageName| Rust package name (convention: lowercase).| |openapi|
+|packageVersion| Rust package version.| |1.0.0|
+|supportAsync| If set, generate async function call instead. This option is for 'reqwest' library only| |true|
+|supportMultipleResponses| If set, return type wraps an enum of all possible 2xx schemas. This option is for 'reqwest' library only| |false|
+|useSingleRequestParameter| Setting this property to true will generate functions with a single argument containing all API endpoint parameters instead of one argument per parameter.| |false|
+|withAWSV4Signature| whether to include AWS v4 signature support| |false|
+|preferUnsignedInt| whether to prefer unsigned ints when converting from the spec into Rust.  Applies to integer types with a minimum set to at least zero.| |false|
 
 ## IMPORT MAPPING
 
