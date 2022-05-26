@@ -52,6 +52,7 @@ public class RustClientCodegen extends DefaultCodegen implements CodegenConfig {
     private boolean supportMultipleResponses = false;
     private boolean withAWSV4Signature = false;
     private boolean preferUnsignedInt = false;
+    private boolean bestFitInt = false;
 
     public static final String PACKAGE_NAME = "packageName";
     public static final String PACKAGE_VERSION = "packageVersion";
@@ -60,6 +61,7 @@ public class RustClientCodegen extends DefaultCodegen implements CodegenConfig {
     public static final String SUPPORT_ASYNC = "supportAsync";
     public static final String SUPPORT_MULTIPLE_RESPONSES = "supportMultipleResponses";
     public static final String PREFER_UNSIGNED_INT = "preferUnsignedInt";
+    public static final String BEST_FIT_INT = "bestFitInt";
 
     protected String packageName = "openapi";
     protected String packageVersion = "1.0.0";
@@ -179,6 +181,8 @@ public class RustClientCodegen extends DefaultCodegen implements CodegenConfig {
         typeMapping.put("AnyType", "serde_json::Value");
 
         unsignedMapping = new HashMap<>();
+        unsignedMapping.put("i8", "u8");
+        unsignedMapping.put("i16", "u16");
         unsignedMapping.put("i32", "u32");
         unsignedMapping.put("i64", "u64");
 
@@ -201,7 +205,10 @@ public class RustClientCodegen extends DefaultCodegen implements CodegenConfig {
         cliOptions.add(new CliOption(CodegenConstants.ENUM_NAME_SUFFIX, CodegenConstants.ENUM_NAME_SUFFIX_DESC).defaultValue(this.enumSuffix));
         cliOptions.add(new CliOption(CodegenConstants.WITH_AWSV4_SIGNATURE_COMMENT, CodegenConstants.WITH_AWSV4_SIGNATURE_COMMENT_DESC, SchemaTypeUtil.BOOLEAN_TYPE)
                 .defaultValue(Boolean.FALSE.toString()));
-        cliOptions.add(new CliOption(PREFER_UNSIGNED_INT, "Prefer unsigned integers where minimum value is >= 0", SchemaTypeUtil.BOOLEAN_TYPE).defaultValue(Boolean.FALSE.toString()));
+        cliOptions.add(new CliOption(PREFER_UNSIGNED_INT, "Prefer unsigned integers where minimum value is >= 0", SchemaTypeUtil.BOOLEAN_TYPE)
+                .defaultValue(Boolean.FALSE.toString()));
+        cliOptions.add(new CliOption(BEST_FIT_INT, "Use best fitting integer type where minimum or maximum is set", SchemaTypeUtil.BOOLEAN_TYPE)
+                .defaultValue(Boolean.FALSE.toString()));
 
         supportedLibraries.put(HYPER_LIBRARY, "HTTP client: Hyper.");
         supportedLibraries.put(REQWEST_LIBRARY, "HTTP client: Reqwest.");
@@ -310,6 +317,11 @@ public class RustClientCodegen extends DefaultCodegen implements CodegenConfig {
         }
         writePropertyBack(PREFER_UNSIGNED_INT, getPreferUnsignedInt());
 
+        if (additionalProperties.containsKey(BEST_FIT_INT)) {
+            this.setBestFitInt(convertPropertyToBoolean(BEST_FIT_INT));
+        }
+        writePropertyBack(BEST_FIT_INT, getBestFitInt());
+
         additionalProperties.put(CodegenConstants.PACKAGE_NAME, packageName);
         additionalProperties.put(CodegenConstants.PACKAGE_VERSION, packageVersion);
 
@@ -380,6 +392,14 @@ public class RustClientCodegen extends DefaultCodegen implements CodegenConfig {
 
     public void setPreferUnsignedInt(boolean preferUnsignedInt) {
         this.preferUnsignedInt = preferUnsignedInt;
+    }
+
+    public boolean getBestFitInt() {
+        return bestFitInt;
+    }
+
+    public void setBestFitInt(boolean bestFitInt) {
+        this.bestFitInt = bestFitInt;
     }
 
     private boolean getUseSingleRequestParameter() {
@@ -548,8 +568,31 @@ public class RustClientCodegen extends DefaultCodegen implements CodegenConfig {
     @Override
     public String getSchemaType(Schema p) {
         String schemaType = super.getSchemaType(p);
-
         String type = typeMapping.getOrDefault(schemaType, schemaType);
+
+        if (convertPropertyToBoolean(BEST_FIT_INT)) {
+            try {
+                BigDecimal maximum = p.getMaximum();
+                BigDecimal minimum = p.getMinimum();
+                if (maximum != null && minimum != null) {
+                    long max = maximum.longValueExact();
+                    long min = minimum.longValueExact();
+
+                    if (max <= 255 && min >= -256) {
+                        type = "i8";
+                    }
+                    else if (max <= Short.MAX_VALUE && min >= Short.MIN_VALUE) {
+                        type = "i16";
+                    }
+                    else if (max <= Integer.MAX_VALUE && min >= Integer.MIN_VALUE) {
+                        type = "i32";
+                    }
+                }
+            } catch (ArithmeticException a) {
+                // no-op: use the base type
+            }
+        }
+
         if (convertPropertyToBoolean(PREFER_UNSIGNED_INT) && unsignedMapping.containsKey(type)) {
             try {
                 BigDecimal minimum = p.getMinimum();
@@ -557,7 +600,7 @@ public class RustClientCodegen extends DefaultCodegen implements CodegenConfig {
                     type = unsignedMapping.get(type);
                 }
             } catch (ArithmeticException a) {
-                // no-op
+                // no-op: use the base type
             }
         }
 
